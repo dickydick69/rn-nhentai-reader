@@ -16,6 +16,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import {useDispatch, useSelector} from 'react-redux';
 import {addFavorite, deleteFavorite} from '../store/actions/favoriteAction';
 import Text from './Text';
@@ -58,6 +59,7 @@ const Result = props => {
   const prevPage = () => {
     animateArrow();
     if (currentPage === 1) {
+      setCurrentPage(book.images.pages.length);
       return;
     }
     setCurrentPage(currentPage - 1);
@@ -127,23 +129,22 @@ const Result = props => {
         modalAnimation={new SlideAnimation({slideFrom: 'bottom'})}>
         <ModalContent>
           <View style={{justifyContent: 'center', alignItems: 'center'}}>
-            <ImageBackground
-              source={
-                settings.sfw
-                  ? require('../assets/sfw.jpg')
-                  : {
-                      uri: book.images.pages[currentPage - 1].link,
-                    }
-              }
+            <View
               style={{
                 height: Dimensions.get('window').height * 0.8,
                 width: Dimensions.get('window').width * 0.9,
-              }}
-              resizeMode={'contain'}>
+                position: 'absolute',
+                zIndex: 1,
+              }}>
               <Animated.View
                 style={[
-                  {flexDirection: 'row', flex: 1},
-                  {opacity: arrowOpacity},
+                  {
+                    flexDirection: 'row',
+                    flex: 1,
+                  },
+                  {
+                    opacity: arrowOpacity,
+                  },
                 ]}>
                 <TouchableWithoutFeedback onPress={prevPage}>
                   <View
@@ -175,7 +176,22 @@ const Result = props => {
                   </View>
                 </TouchableWithoutFeedback>
               </Animated.View>
-            </ImageBackground>
+            </View>
+            <FastImage
+              source={
+                settings.sfw
+                  ? require('../assets/sfw.jpg')
+                  : {
+                      uri: book.images.pages[currentPage - 1].link,
+                      priority: FastImage.priority.normal,
+                    }
+              }
+              style={{
+                height: Dimensions.get('window').height * 0.8,
+                width: Dimensions.get('window').width * 0.9,
+              }}
+              resizeMode={FastImage.resizeMode.contain}
+            />
           </View>
         </ModalContent>
       </Modal>
