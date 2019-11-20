@@ -10,7 +10,7 @@ so I apologize for any crappy codes on it.
 Node 8 or greater is required. Targeted for Android SDK 21 (Android 5.0) \
 You also need to follow React Native development requirements. Follow their starting guide.
 
-##### **Running the project: **
+##### **Running the project:**
 `yarn` or `npm install` \
 `react-native run android` or `yarn android` 
 
