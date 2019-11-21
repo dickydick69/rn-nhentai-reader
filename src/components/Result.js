@@ -6,24 +6,19 @@ import Modal, {
 } from 'react-native-modals';
 import Colors from '../constants/Colors';
 import {
-  Image,
-  ImageBackground,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
   Dimensions,
   Alert,
   Animated,
-  Easing,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useDispatch, useSelector} from 'react-redux';
 import {addFavorite, deleteFavorite} from '../store/actions/favoriteAction';
-import Text from './Text';
-import SuccessButton from './SuccessButton';
 import Icon from 'react-native-vector-icons/Ionicons';
-import PrimaryButton from './PrimaryButton';
 import Badges from './Badges';
+import {Text, SuccessButton, PrimaryButton, SecondaryText} from './Core';
 
 const Result = props => {
   const dispatch = useDispatch();
@@ -129,13 +124,7 @@ const Result = props => {
         modalAnimation={new SlideAnimation({slideFrom: 'bottom'})}>
         <ModalContent>
           <View style={{justifyContent: 'center', alignItems: 'center'}}>
-            <View
-              style={{
-                height: Dimensions.get('window').height * 0.8,
-                width: Dimensions.get('window').width * 0.9,
-                position: 'absolute',
-                zIndex: 1,
-              }}>
+            <View style={styles.absoluteButtons}>
               <Animated.View
                 style={[
                   {
@@ -147,12 +136,7 @@ const Result = props => {
                   },
                 ]}>
                 <TouchableWithoutFeedback onPress={prevPage}>
-                  <View
-                    style={{
-                      backgroundColor: 'rgba(255,255,255,0)',
-                      width: '50%',
-                      justifyContent: 'center',
-                    }}>
+                  <View style={styles.leftAbsoluteButton}>
                     <Icon
                       name="ios-arrow-dropleft"
                       color={'rgba(255,255,255,0.5)'}
@@ -161,13 +145,7 @@ const Result = props => {
                   </View>
                 </TouchableWithoutFeedback>
                 <TouchableWithoutFeedback onPress={nextPage}>
-                  <View
-                    style={{
-                      backgroundColor: 'rgba(255,255,255,0)',
-                      width: '50%',
-                      alignItems: 'flex-end',
-                      justifyContent: 'center',
-                    }}>
+                  <View style={styles.rightAbsoluteButton}>
                     <Icon
                       name="ios-arrow-dropright"
                       color={'rgba(255,255,255,0.5)'}
@@ -186,18 +164,18 @@ const Result = props => {
                       priority: FastImage.priority.normal,
                     }
               }
-              style={{
-                height: Dimensions.get('window').height * 0.8,
-                width: Dimensions.get('window').width * 0.9,
-              }}
+              style={styles.pageImage}
               resizeMode={FastImage.resizeMode.contain}
+              onProgress={e =>
+                console.log(e.nativeEvent.loaded / e.nativeEvent.total)
+              }
             />
           </View>
         </ModalContent>
       </Modal>
 
       <View style={styles.imageContainer}>
-        <Image
+        <FastImage
           source={
             settings.sfw
               ? require('../assets/sfw.jpg')
@@ -206,17 +184,13 @@ const Result = props => {
                 }
           }
           resizeMode={'contain'}
-          style={{height: 250, width: 150}}
+          style={styles.coverImage}
         />
       </View>
       <View>
         <Text numberOfLines={4}>{book.title && book.title.english}</Text>
-        <View
-          style={{
-            marginVertical: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
+        <SecondaryText>{book.id}</SecondaryText>
+        <View style={styles.buttonContainer}>
           <View style={{width: '49%'}}>
             <SuccessButton onPress={openReaderModal}>
               {' '}
@@ -243,6 +217,36 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
+  },
+  coverImage: {
+    height: Dimensions.get('window').height * 0.4,
+    width: Dimensions.get('window').width * 0.85,
+  },
+  buttonContainer: {
+    marginVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  absoluteButtons: {
+    height: Dimensions.get('window').height * 0.8,
+    width: Dimensions.get('window').width * 0.9,
+    position: 'absolute',
+    zIndex: 1,
+  },
+  leftAbsoluteButton: {
+    backgroundColor: 'rgba(255,255,255,0)',
+    width: '50%',
+    justifyContent: 'center',
+  },
+  rightAbsoluteButton: {
+    backgroundColor: 'rgba(255,255,255,0)',
+    width: '50%',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  pageImage: {
+    height: Dimensions.get('window').height * 0.8,
+    width: Dimensions.get('window').width * 0.9,
   },
 });
 

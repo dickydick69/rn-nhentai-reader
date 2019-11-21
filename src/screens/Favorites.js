@@ -1,5 +1,6 @@
 import React from 'react';
-import {View, StyleSheet, FlatList, Image, Alert} from 'react-native';
+import {View, StyleSheet, FlatList, Alert} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import {useSelector, useDispatch} from 'react-redux';
 import {deleteFavorite} from '../store/actions/favoriteAction';
 import {
@@ -34,7 +35,7 @@ const FavoriteCard = props => {
       }>
       <View style={{flexDirection: 'row'}}>
         <View style={{marginRight: 10}}>
-          <Image
+          <FastImage
             source={
               settings.sfw
                 ? require('../assets/sfw.jpg')
