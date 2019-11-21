@@ -127,22 +127,27 @@ const Result = props => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         const dirs = RNFetchBlob.fs.dirs;
+        const path =
+          dirs.DownloadDir +
+          '/nhrd/' +
+          book.id +
+          '/' +
+          currentPage +
+          extension();
         const fetchBlob = RNFetchBlob.config({
-          path:
-            dirs.DownloadDir +
-            '/nhrd/' +
-            book.id +
-            '/' +
-            currentPage +
-            extension(),
+          path,
         });
         const res = await fetchBlob.fetch('GET', link);
+        await RNFetchBlob.fs.scanFile([
+          {
+            path,
+          },
+        ]);
         ToastAndroid.show(
           `The file saved to: ${res.path()}`,
           ToastAndroid.SHORT,
         );
       } else {
-        console.log(extension());
         Alert.alert(
           'Permission Denied!',
           'You need to give storage permission to save the file',
