@@ -12,7 +12,10 @@ import {
   Dimensions,
   Alert,
   Animated,
+  PermissionsAndroid,
+  ToastAndroid,
 } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
 import FastImage from 'react-native-fast-image';
 import {useDispatch, useSelector} from 'react-redux';
 import {addFavorite, deleteFavorite} from '../store/actions/favoriteAction';
@@ -102,6 +105,56 @@ const Result = props => {
     );
   };
 
+  const saveButton = async () => {
+    try {
+      const {link, t} = book.images.pages[currentPage - 1];
+      const extension = () => {
+        switch (t) {
+          case 'j':
+            return '.jpg';
+          case 'p':
+            return '.png';
+          default:
+            return '.jpg';
+        }
+      };
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'This app needs access to storage',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        const dirs = RNFetchBlob.fs.dirs;
+        const fetchBlob = RNFetchBlob.config({
+          path:
+            dirs.DownloadDir +
+            '/nhrd/' +
+            book.id +
+            '/' +
+            currentPage +
+            extension(),
+        });
+        const res = await fetchBlob.fetch('GET', link);
+        ToastAndroid.show(
+          `The file saved to: ${res.path()}`,
+          ToastAndroid.SHORT,
+        );
+      } else {
+        console.log(extension());
+        Alert.alert(
+          'Permission Denied!',
+          'You need to give storage permission to save the file',
+        );
+        throw 'No Permission';
+      }
+    } catch (e) {
+      ToastAndroid.show('Error while saving file.', ToastAndroid.SHORT);
+      console.log(e);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -171,6 +224,11 @@ const Result = props => {
               }
             />
           </View>
+          <PrimaryButton
+            onPress={saveButton}
+            style={{width: '100%', marginTop: 10}}>
+            <Icon name="ios-save" size={14} color={'white'} /> Save To Gallery
+          </PrimaryButton>
         </ModalContent>
       </Modal>
 
@@ -228,7 +286,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   absoluteButtons: {
-    height: Dimensions.get('window').height * 0.8,
+    height: Dimensions.get('window').height * 0.75,
     width: Dimensions.get('window').width * 0.9,
     position: 'absolute',
     zIndex: 1,
@@ -245,7 +303,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pageImage: {
-    height: Dimensions.get('window').height * 0.8,
+    height: Dimensions.get('window').height * 0.75,
     width: Dimensions.get('window').width * 0.9,
   },
 });
