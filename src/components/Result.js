@@ -22,6 +22,7 @@ import {addFavorite, deleteFavorite} from '../store/actions/favoriteAction';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Badges from './Badges';
 import {Text, SuccessButton, PrimaryButton, SecondaryText} from './Core';
+import ImageViewer from 'react-native-image-zoom-viewer';
 
 const Result = props => {
   const dispatch = useDispatch();
@@ -29,7 +30,7 @@ const Result = props => {
   const settings = useSelector(state => state.settings);
 
   const [slideAnimationModal, setSlideAnimationModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [arrowOpacity] = useState(new Animated.Value(1));
 
   const {book} = props;
@@ -48,28 +49,28 @@ const Result = props => {
 
   const openReaderModal = () => {
     animateArrow();
-    if (currentPage === book.images.pages.length) {
-      setCurrentPage(1);
+    if (currentPageIndex === book.images.pages.length) {
+      setCurrentPageIndex(1);
     }
     setSlideAnimationModal(true);
   };
 
   const prevPage = () => {
     animateArrow();
-    if (currentPage === 1) {
-      setCurrentPage(book.images.pages.length);
+    if (currentPageIndex === 1) {
+      setCurrentPageIndex(book.images.pages.length);
       return;
     }
-    setCurrentPage(currentPage - 1);
+    setCurrentPageIndex(currentPageIndex - 1);
   };
 
   const nextPage = () => {
     animateArrow();
-    if (currentPage === book.images.pages.length) {
+    if (currentPageIndex === book.images.pages.length) {
       setSlideAnimationModal(false);
       return;
     }
-    setCurrentPage(currentPage + 1);
+    setCurrentPageIndex(currentPageIndex + 1);
   };
 
   const onAddToFavorite = () => {
@@ -107,7 +108,7 @@ const Result = props => {
 
   const saveButton = async () => {
     try {
-      const {link, t} = book.images.pages[currentPage - 1];
+      const {link, t} = book.images.pages[currentPageIndex];
       const extension = () => {
         switch (t) {
           case 'j':
@@ -132,7 +133,7 @@ const Result = props => {
           '/nhrd/' +
           book.id +
           '/' +
-          currentPage +
+          currentPageIndex +
           extension();
         const fetchBlob = RNFetchBlob.config({
           path,
@@ -160,6 +161,12 @@ const Result = props => {
     }
   };
 
+  const images = book.images.pages.map(page => ({
+    ...page,
+    url: page.link,
+    ...styles.pageImage,
+  }));
+
   return (
     <>
       <Modal
@@ -173,7 +180,7 @@ const Result = props => {
         }}
         modalTitle={
           <ModalTitle
-            title={`${currentPage} of ${book.images.pages.length}`}
+            title={`${currentPageIndex + 1} of ${book.images.pages.length}`}
             textStyle={{color: 'white'}}
             hasTitleBar={false}
           />
@@ -182,7 +189,7 @@ const Result = props => {
         modalAnimation={new SlideAnimation({slideFrom: 'bottom'})}>
         <ModalContent>
           <View style={{justifyContent: 'center', alignItems: 'center'}}>
-            <View style={styles.absoluteButtons}>
+            {/*<View style={styles.absoluteButtons}>
               <Animated.View
                 style={[
                   {
@@ -212,13 +219,29 @@ const Result = props => {
                   </View>
                 </TouchableWithoutFeedback>
               </Animated.View>
+            </View>*/}
+            <View style={styles.pageImage}>
+              {slideAnimationModal && (
+                <ImageViewer
+                  imageUrls={images}
+                  renderImage={imgProps => (
+                    <FastImage resizeMode={'contain'} {...imgProps} />
+                  )}
+                  failImageSource={'kenthu'}
+                  backgroundColor="rgba(0,0,0,0)"
+                  index={currentPageIndex}
+                  onChange={index => setCurrentPageIndex(index)}
+                  renderIndicator={() => {}}
+                  saveToLocalByLongPress={false}
+                />
+              )}
             </View>
-            <FastImage
+            {/*<FastImage
               source={
                 settings.sfw
                   ? require('../assets/sfw.jpg')
                   : {
-                      uri: book.images.pages[currentPage - 1].link,
+                      uri: book.images.pages[currentPageIndex - 1].link,
                       priority: FastImage.priority.normal,
                     }
               }
@@ -227,7 +250,7 @@ const Result = props => {
               onProgress={e =>
                 console.log(e.nativeEvent.loaded / e.nativeEvent.total)
               }
-            />
+            />*/}
           </View>
           <PrimaryButton
             onPress={saveButton}
