@@ -3,11 +3,11 @@ import {
   View,
   StyleSheet,
   FlatList,
-  Image,
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import FastImage from 'react-native-fast-image';
 import {
   addKeyword,
   deleteKeyword,
@@ -24,6 +24,7 @@ import {
   ButtonBadge,
   SecondaryText,
   FloatingReset,
+  Badge,
 } from '../components/Core';
 import Search from './Search';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -53,8 +54,8 @@ const ComponentSwitcher = props => {
         renderItem={({item}) => (
           <TouchableCard onPress={() => onPress(item)}>
             <View style={{flexDirection: 'row'}}>
-              <View>
-                <Image
+              <View style={{paddingRight: 10}}>
+                <FastImage
                   source={
                     settings.sfw
                       ? require('../assets/sfw.jpg')
@@ -73,6 +74,11 @@ const ComponentSwitcher = props => {
                   {item.title.pretty}
                 </Text>
                 <SecondaryText style={{fontSize: 10}}>{item.id}</SecondaryText>
+                <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                  {item.language.map(lang => (
+                    <Badge key={lang.id}>{lang.name}</Badge>
+                  ))}
+                </View>
               </View>
             </View>
           </TouchableCard>
