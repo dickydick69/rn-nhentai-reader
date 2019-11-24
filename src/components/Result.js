@@ -7,13 +7,14 @@ import Modal, {
 import Colors from '../constants/Colors';
 import {
   StyleSheet,
-  TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
   Dimensions,
   Alert,
   Animated,
   PermissionsAndroid,
   ToastAndroid,
+  FlatList,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import FastImage from 'react-native-fast-image';
@@ -22,6 +23,7 @@ import {addFavorite, deleteFavorite} from '../store/actions/favoriteAction';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Badges from './Badges';
 import {Text, SuccessButton, PrimaryButton, SecondaryText} from './Core';
+import ResultModal from './ResultModal';
 import ImageViewer from 'react-native-image-zoom-viewer';
 
 const Result = props => {
@@ -29,7 +31,8 @@ const Result = props => {
   const favorites = useSelector(state => state.favorite.books);
   const settings = useSelector(state => state.settings);
 
-  const [slideAnimationModal, setSlideAnimationModal] = useState(false);
+  const [pageModal, setPageModal] = useState(false);
+  const [galleryModal, setGalleryModal] = useState(false);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [arrowOpacity] = useState(new Animated.Value(1));
 
@@ -52,7 +55,7 @@ const Result = props => {
     if (currentPageIndex === book.images.pages.length) {
       setCurrentPageIndex(1);
     }
-    setSlideAnimationModal(true);
+    setPageModal(true);
   };
 
   const prevPage = () => {
@@ -67,7 +70,7 @@ const Result = props => {
   const nextPage = () => {
     animateArrow();
     if (currentPageIndex === book.images.pages.length) {
-      setSlideAnimationModal(false);
+      setPageModal(false);
       return;
     }
     setCurrentPageIndex(currentPageIndex + 1);
@@ -133,7 +136,7 @@ const Result = props => {
           '/nhrd/' +
           book.id +
           '/' +
-          currentPageIndex +
+          (currentPageIndex + 1) +
           extension();
         const fetchBlob = RNFetchBlob.config({
           path,
@@ -161,105 +164,18 @@ const Result = props => {
     }
   };
 
-  const images = book.images.pages.map(page => ({
-    ...page,
-    url: page.link,
-    ...styles.pageImage,
-  }));
-
   return (
     <>
-      <Modal
-        onDismiss={() => setSlideAnimationModal(false)}
-        onTouchOutside={() => setSlideAnimationModal(false)}
-        visible={slideAnimationModal}
-        width={0.95}
-        onHardwareBackPress={() => {
-          setSlideAnimationModal(false);
-          return true;
-        }}
-        modalTitle={
-          <ModalTitle
-            title={`${currentPageIndex + 1} of ${book.images.pages.length}`}
-            textStyle={{color: 'white'}}
-            hasTitleBar={false}
-          />
-        }
-        modalStyle={{backgroundColor: Colors.backgroundColor}}
-        modalAnimation={new SlideAnimation({slideFrom: 'bottom'})}>
-        <ModalContent>
-          <View style={{justifyContent: 'center', alignItems: 'center'}}>
-            {/*<View style={styles.absoluteButtons}>
-              <Animated.View
-                style={[
-                  {
-                    flexDirection: 'row',
-                    flex: 1,
-                  },
-                  {
-                    opacity: arrowOpacity,
-                  },
-                ]}>
-                <TouchableWithoutFeedback onPress={prevPage}>
-                  <View style={styles.leftAbsoluteButton}>
-                    <Icon
-                      name="ios-arrow-dropleft"
-                      color={'rgba(255,255,255,0.5)'}
-                      size={72}
-                    />
-                  </View>
-                </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={nextPage}>
-                  <View style={styles.rightAbsoluteButton}>
-                    <Icon
-                      name="ios-arrow-dropright"
-                      color={'rgba(255,255,255,0.5)'}
-                      size={72}
-                    />
-                  </View>
-                </TouchableWithoutFeedback>
-              </Animated.View>
-            </View>*/}
-            <View style={styles.pageImage}>
-              {slideAnimationModal && (
-                <ImageViewer
-                  imageUrls={images}
-                  renderImage={imgProps => (
-                    <FastImage resizeMode={'contain'} {...imgProps} />
-                  )}
-                  failImageSource={'kenthu'}
-                  backgroundColor="rgba(0,0,0,0)"
-                  index={currentPageIndex}
-                  onChange={index => setCurrentPageIndex(index)}
-                  renderIndicator={() => {}}
-                  saveToLocalByLongPress={false}
-                />
-              )}
-            </View>
-            {/*<FastImage
-              source={
-                settings.sfw
-                  ? require('../assets/sfw.jpg')
-                  : {
-                      uri: book.images.pages[currentPageIndex - 1].link,
-                      priority: FastImage.priority.normal,
-                    }
-              }
-              style={styles.pageImage}
-              resizeMode={FastImage.resizeMode.contain}
-              onProgress={e =>
-                console.log(e.nativeEvent.loaded / e.nativeEvent.total)
-              }
-            />*/}
-          </View>
-          <PrimaryButton
-            onPress={saveButton}
-            style={{width: '100%', marginTop: 10}}>
-            <Icon name="ios-save" size={14} color={'white'} /> Save To Gallery
-          </PrimaryButton>
-        </ModalContent>
-      </Modal>
-
+      <ResultModal
+        book={book}
+        setGalleryModal={setGalleryModal}
+        setCurrentPageIndex={setCurrentPageIndex}
+        setPageModal={setPageModal}
+        galleryModal={galleryModal}
+        currentPageIndex={currentPageIndex}
+        pageModal={pageModal}
+        saveButton={saveButton}
+      />
       <View style={styles.imageContainer}>
         <FastImage
           source={
@@ -278,7 +194,7 @@ const Result = props => {
         <SecondaryText>{book.id}</SecondaryText>
         <View style={styles.buttonContainer}>
           <View style={{width: '49%'}}>
-            <SuccessButton onPress={openReaderModal}>
+            <SuccessButton onPress={() => setGalleryModal(true)}>
               {' '}
               <Icon name="ios-book" color={'white'} /> Read
             </SuccessButton>
@@ -312,23 +228,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  absoluteButtons: {
-    height: Dimensions.get('window').height * 0.75,
-    width: Dimensions.get('window').width * 0.9,
-    position: 'absolute',
-    zIndex: 1,
-  },
-  leftAbsoluteButton: {
-    backgroundColor: 'rgba(255,255,255,0)',
-    width: '50%',
-    justifyContent: 'center',
-  },
-  rightAbsoluteButton: {
-    backgroundColor: 'rgba(255,255,255,0)',
-    width: '50%',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
   },
   pageImage: {
     height: Dimensions.get('window').height * 0.75,
