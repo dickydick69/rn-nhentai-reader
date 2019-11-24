@@ -175,6 +175,7 @@ const Result = props => {
         currentPageIndex={currentPageIndex}
         pageModal={pageModal}
         saveButton={saveButton}
+        settings={settings}
       />
       <View style={styles.imageContainer}>
         <FastImage

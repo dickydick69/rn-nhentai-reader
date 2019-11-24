@@ -16,6 +16,7 @@ import FastImage from 'react-native-fast-image';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import {PrimaryButton} from './Core';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {set} from 'react-native-reanimated';
 
 const ResultModal = props => {
   const {
@@ -27,12 +28,16 @@ const ResultModal = props => {
     book,
     currentPageIndex,
     saveButton,
+    settings,
   } = props;
 
   const images = book.images.pages.map(page => ({
     ...page,
     url: page.link,
     ...styles.pageImage,
+    props: {
+      source: settings.sfw ? require('../assets/sfw.jpg') : '',
+    },
   }));
   const getExtension = t => {
     switch (t) {
@@ -99,7 +104,11 @@ const ResultModal = props => {
                         margin: 5,
                       }}>
                       <FastImage
-                        source={{uri: item.url}}
+                        source={
+                          settings.sfw
+                            ? require('../assets/sfw.jpg')
+                            : {uri: item.url}
+                        }
                         style={{
                           height: '100%',
                           width: '100%',
