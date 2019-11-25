@@ -21,7 +21,7 @@ const MainBarNavigator = createMaterialBottomTabNavigator(
     SearchQueryStackNavigator: {
       screen: SearchQueryStackNavigator,
       navigationOptions: {
-        title: 'Search (Query)',
+        title: 'Search (Keyword)',
         tabBarIcon: ({tintColor}) => (
           <Icon name="ios-search" color={tintColor} size={24} />
         ),

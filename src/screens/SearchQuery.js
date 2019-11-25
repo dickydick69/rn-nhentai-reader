@@ -245,7 +245,7 @@ const SearchQuery = props => {
 };
 
 SearchQuery.navigationOptions = navData => ({
-  title: 'Search (By Query)',
+  title: 'Search (By Keyword)',
   headerLeft: <HamburgerButton navigation={navData} />,
 });
 
