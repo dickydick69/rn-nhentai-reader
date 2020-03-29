@@ -15,6 +15,7 @@ import {
   PermissionsAndroid,
   ToastAndroid,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import FastImage from 'react-native-fast-image';
@@ -35,6 +36,8 @@ const Result = props => {
   const [galleryModal, setGalleryModal] = useState(false);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [arrowOpacity] = useState(new Animated.Value(1));
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const {book} = props;
 
@@ -188,7 +191,24 @@ const Result = props => {
           }
           resizeMode={'contain'}
           style={styles.coverImage}
-        />
+          onLoadStart={e => setImageLoaded(false)}
+          onLoad={e => setImageLoaded(true)}
+          onProgress={e =>
+            setProgress(e.nativeEvent.loaded / e.nativeEvent.total)
+          }>
+          {!imageLoaded && (
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <ActivityIndicator size={48} />
+              <Text>{progress.toFixed(1) * 100} %</Text>
+            </View>
+          )}
+        </FastImage>
       </View>
       <View>
         <Text numberOfLines={4}>{book.title && book.title.english}</Text>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Modal, {
   ModalContent,
   ModalTitle,
@@ -11,12 +11,56 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  ActivityIndicator
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import {PrimaryButton} from './Core';
+import {PrimaryButton, Text} from './Core';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {set} from 'react-native-reanimated';
+
+const PageImage = props => {
+  const {settings, item} = props;
+  const [progress, setProgress] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <View
+      style={{
+        width: Dimensions.get('window').width * 0.2,
+        height: Dimensions.get('window').height * 0.2,
+        positiion: 'relative',
+        margin: 5,
+      }}>
+      {!loaded && (
+        <View
+          style={{
+            width: '100%',
+            height: '100%',
+            left: 0,
+            top: 0,
+            position: 'absolute',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <ActivityIndicator size={36} />
+          <Text style={{fontSize: 8}}>{progress.toFixed(1) * 100} %</Text>
+        </View>
+      )}
+      <FastImage
+        source={settings.sfw ? require('../assets/sfw.jpg') : {uri: item.url}}
+        style={{
+          height: '100%',
+          width: '100%',
+        }}
+        onProgress={e =>
+          setProgress(e.nativeEvent.loaded / e.nativeEvent.total)
+        }
+        onLoad={e => setLoaded(true)}
+        resizeMode={'cover'}
+      />
+    </View>
+  );
+};
 
 const ResultModal = props => {
   const {
@@ -97,25 +141,7 @@ const ResultModal = props => {
                       setCurrentPageIndex(index);
                       setPageModal(true);
                     }}>
-                    <View
-                      style={{
-                        width: Dimensions.get('window').width * 0.2,
-                        height: Dimensions.get('window').height * 0.2,
-                        margin: 5,
-                      }}>
-                      <FastImage
-                        source={
-                          settings.sfw
-                            ? require('../assets/sfw.jpg')
-                            : {uri: item.url}
-                        }
-                        style={{
-                          height: '100%',
-                          width: '100%',
-                        }}
-                        resizeMode={'cover'}
-                      />
-                    </View>
+                    <PageImage item={item} settings={settings} />
                   </TouchableOpacity>
                 );
               }}
